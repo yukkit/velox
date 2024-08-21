@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+find_dependency(DuckDB)
+
+include("${CMAKE_CURRENT_LIST_DIR}/veloxTargets.cmake")

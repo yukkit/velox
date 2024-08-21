@@ -29,6 +29,9 @@ class SubstraitVeloxPlanConverter {
  public:
   explicit SubstraitVeloxPlanConverter(memory::MemoryPool* pool)
       : pool_(pool) {}
+
+  virtual ~SubstraitVeloxPlanConverter() = default;
+
   struct SplitInfo {
     /// The Partition index.
     u_int32_t partitionIndex;
@@ -73,7 +76,7 @@ class SubstraitVeloxPlanConverter {
       const RowTypePtr& type);
 
   /// Convert Substrait Rel into Velox PlanNode.
-  core::PlanNodePtr toVeloxPlan(const ::substrait::Rel& rel);
+  virtual core::PlanNodePtr toVeloxPlan(const ::substrait::Rel& rel);
 
   /// Convert Substrait RelRoot into Velox PlanNode.
   core::PlanNodePtr toVeloxPlan(const ::substrait::RelRoot& root);
@@ -118,7 +121,7 @@ class SubstraitVeloxPlanConverter {
       const ::substrait::RelCommon& relCommon,
       const core::PlanNodePtr& noEmitNode);
 
- private:
+ protected:
   /// Returns unique ID to use for plan node. Produces sequential numbers
   /// starting from zero.
   std::string nextPlanNodeId();

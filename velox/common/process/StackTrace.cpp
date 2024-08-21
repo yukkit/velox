@@ -162,13 +162,18 @@ inline std::string translateFrameImpl(void* addressPtr) {
   using namespace folly::symbolizer;
 
   std::uintptr_t address = reinterpret_cast<std::uintptr_t>(addressPtr);
-  Symbolizer symbolizer(LocationInfoMode::DISABLED);
+  Symbolizer symbolizer(LocationInfoMode::FULL);
   SymbolizedFrame frame;
   symbolizer.symbolize(address, frame);
 
-  StringSymbolizePrinter printer(SymbolizePrinter::TERSE);
-  printer.print(frame);
-  return printer.str();
+  StringSymbolizePrinter func_name_printer(SymbolizePrinter::TERSE);
+  StringSymbolizePrinter loc_printer(SymbolizePrinter::TERSE_FILE_AND_LINE);
+  func_name_printer.print(frame);
+  loc_printer.print(frame);
+  return fmt::format(
+      "{} at {}",
+      folly::demangle(func_name_printer.str().data()),
+      loc_printer.str());
 }
 } // namespace
 #endif

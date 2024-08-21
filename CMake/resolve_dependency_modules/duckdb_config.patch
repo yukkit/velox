@@ -1,0 +1,14 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -955,9 +955,9 @@ export(EXPORT "${DUCKDB_EXPORT_SET}"
+        FILE "${PROJECT_BINARY_DIR}/${DUCKDB_EXPORT_SET}.cmake")
+ 
+ # Only write the cmake package configuration if the templates exist
+-set(CMAKE_CONFIG_TEMPLATE "${CMAKE_SOURCE_DIR}/DuckDBConfig.cmake.in")
++set(CMAKE_CONFIG_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/DuckDBConfig.cmake.in")
+ set(CMAKE_CONFIG_VERSION_TEMPLATE
+-    "${CMAKE_SOURCE_DIR}/DuckDBConfigVersion.cmake.in")
++    "${CMAKE_CURRENT_SOURCE_DIR}/DuckDBConfigVersion.cmake.in")
+ if(EXISTS ${CMAKE_CONFIG_TEMPLATE} AND EXISTS ${CMAKE_CONFIG_VERSION_TEMPLATE})
+ 
+   # Configure cmake package config for the build tree

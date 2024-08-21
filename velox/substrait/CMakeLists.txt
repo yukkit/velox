@@ -60,10 +60,25 @@ set(SRCS
     VariantToVectorConverter.cpp)
 
 velox_add_library(velox_substrait_plan_converter ${SRCS})
-target_include_directories(velox_substrait_plan_converter
-                           PUBLIC ${PROTO_OUTPUT_DIR})
+target_include_directories(
+  velox_substrait_plan_converter
+  PUBLIC $<BUILD_INTERFACE:${PROTO_OUTPUT_DIR}>
+         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 velox_link_libraries(velox_substrait_plan_converter velox_connector
                      velox_dwio_dwrf_common)
+
+install(
+  DIRECTORY ${PROTO_OUTPUT_DIR}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/velox/substrait/proto
+  FILES_MATCHING
+  PATTERN "*.inc"
+  PATTERN "*.h")
+
+install(
+  DIRECTORY ${substrait_proto_directory}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/velox/substrait/proto
+  FILES_MATCHING
+  PATTERN "*.proto")
 
 if(${VELOX_BUILD_TESTING})
   add_subdirectory(tests)

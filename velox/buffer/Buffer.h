@@ -205,17 +205,13 @@ class Buffer {
   // classes. Because of the virtual function dispatch, it's unlikely the
   // compiler can inline it, so we make it only called in the debug build.
   void setEndGuard() {
-#ifndef NDEBUG
     setEndGuardImpl();
-#endif
   }
 
   virtual void setEndGuardImpl() {}
 
   void checkEndGuard() const {
-#ifndef NDEBUG
     checkEndGuardImpl();
-#endif
   }
 
   // Checks the magic number at capacity() to detect overrun. No-op

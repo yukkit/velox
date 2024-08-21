@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-.PHONY: all cmake build clean debug release unit
+.PHONY: all cmake build clean debug release rel_with_deb_info unit
 
 SHELL=/bin/bash
 BUILD_BASE_DIR=_build
@@ -31,6 +31,8 @@ VELOX_BUILD_MINIMAL ?= "OFF"
 # Control whether to build unit tests. By default set to "ON"; set to
 # "OFF" to disable.
 VELOX_BUILD_TESTING ?= "ON"
+
+CMAKE_INSTALL_PREFIX ?= /usr/local
 
 CMAKE_FLAGS := -DTREAT_WARNINGS_AS_ERRORS=${TREAT_WARNINGS_AS_ERRORS}
 CMAKE_FLAGS += -DENABLE_ALL_WARNINGS=${ENABLE_WALL}
@@ -63,6 +65,16 @@ endif
 ifdef CUDA_FLAGS
 CMAKE_FLAGS += -DCMAKE_CUDA_FLAGS="$(CUDA_FLAGS)"
 endif
+
+CMAKE_FLAGS += -DCMAKE_INSTALL_PREFIX=$(CMAKE_INSTALL_PREFIX)
+
+CMAKE_FLAGS += -DVELOX_BUILD_TEST_UTILS=ON
+CMAKE_FLAGS += -DVELOX_ENABLE_SUBSTRAIT=ON
+CMAKE_FLAGS += -DVELOX_ENABLE_TPCH_CONNECTOR=ON
+CMAKE_FLAGS += -DVELOX_ENABLE_HIVE_CONNECTOR=ON
+CMAKE_FLAGS += -DVELOX_ENABLE_S3=ON
+CMAKE_FLAGS += -DVELOX_ENABLE_PARQUET=ON
+CMAKE_FLAGS += -DVELOX_CODEGEN_SUPPORT=OFF
 
 # Use Ninja if available. If Ninja is used, pass through parallelism control flags.
 USE_NINJA ?= 1
@@ -111,6 +123,10 @@ debug:					#: Build with debugging symbols
 release:				#: Build the release version
 	$(MAKE) cmake BUILD_DIR=release BUILD_TYPE=Release && \
 	$(MAKE) build BUILD_DIR=release
+
+rel_with_deb_info:
+	$(MAKE) cmake BUILD_DIR=rel_with_deb_info BUILD_TYPE=RelWithDebInfo && \
+	$(MAKE) build BUILD_DIR=rel_with_deb_info
 
 minimal_debug:			#: Minimal build with debugging symbols
 	$(MAKE) cmake BUILD_DIR=debug BUILD_TYPE=debug EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DVELOX_BUILD_MINIMAL=ON"

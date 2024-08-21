@@ -27,6 +27,8 @@ namespace facebook::velox::substrait {
 /// expressions.
 class SubstraitVeloxExprConverter {
  public:
+  virtual ~SubstraitVeloxExprConverter() = default;
+
   /// subParser: A Substrait parser used to convert Substrait representations
   /// into recognizable representations. functionMap: A pre-constructed map
   /// storing the relations between the function id and the function name.
@@ -55,7 +57,7 @@ class SubstraitVeloxExprConverter {
       const ::substrait::Expression::Literal& substraitLit);
 
   /// Convert Substrait Expression into Velox Expression.
-  core::TypedExprPtr toVeloxExpr(
+  virtual core::TypedExprPtr toVeloxExpr(
       const ::substrait::Expression& substraitExpr,
       const RowTypePtr& inputType);
 
@@ -64,7 +66,7 @@ class SubstraitVeloxExprConverter {
       const ::substrait::Expression::IfThen& substraitIfThen,
       const RowTypePtr& inputType);
 
- private:
+ protected:
   /// Convert list literal to ArrayVector.
   ArrayVectorPtr literalsToArrayVector(
       const ::substrait::Expression::Literal& listLiteral);
@@ -85,8 +87,9 @@ class SubstraitVeloxExprConverter {
 
 template <>
 struct fmt::formatter<substrait::Expression::RexTypeCase> : formatter<int> {
-  auto format(const substrait::Expression::RexTypeCase& s, format_context& ctx)
-      const {
+  auto format(
+      const substrait::Expression::RexTypeCase& s,
+      format_context& ctx) {
     return formatter<int>::format(static_cast<int>(s), ctx);
   }
 };
@@ -96,7 +99,7 @@ struct fmt::formatter<substrait::Expression::Cast::FailureBehavior>
     : formatter<int> {
   auto format(
       const substrait::Expression::Cast::FailureBehavior& s,
-      format_context& ctx) const {
+      format_context& ctx) {
     return formatter<int>::format(static_cast<int>(s), ctx);
   }
 };
@@ -105,7 +108,7 @@ struct fmt::formatter<substrait::Expression_FieldReference::ReferenceTypeCase>
     : formatter<int> {
   auto format(
       const substrait::Expression_FieldReference::ReferenceTypeCase& s,
-      format_context& ctx) const {
+      format_context& ctx) {
     return formatter<int>::format(static_cast<int>(s), ctx);
   }
 };
@@ -115,7 +118,7 @@ struct fmt::formatter<substrait::Expression_Literal::LiteralTypeCase>
     : formatter<int> {
   auto format(
       const substrait::Expression_Literal::LiteralTypeCase& s,
-      format_context& ctx) const {
+      format_context& ctx) {
     return formatter<int>::format(static_cast<int>(s), ctx);
   }
 };

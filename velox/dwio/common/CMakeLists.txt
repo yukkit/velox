@@ -82,3 +82,10 @@ velox_link_libraries(
   Folly::folly
   glog::glog
   protobuf::libprotobuf)
+
+install(
+  DIRECTORY wrap
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/velox/dwio/common"
+  FILES_MATCHING
+  PATTERN "*.inc"
+  PATTERN "*.h")

@@ -47,3 +47,8 @@ add_custom_target(dwio_proto ALL DEPENDS ${PROTO_OUTPUT_FILES})
 if(VELOX_MONO_LIBRARY)
   add_dependencies(velox dwio_proto)
 endif()
+
+# velox_include_directories( velox_dwio_dwrf_proto PUBLIC
+# $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+# $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>) install(FILES ${PROTO_HDRS}
+# DESTINATION include/velox/dwio/dwrf/proto)

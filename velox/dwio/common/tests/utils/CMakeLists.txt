@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(
+velox_add_library(
   velox_dwio_common_test_utils
   BatchMaker.cpp
   DataFiles.cpp
@@ -21,7 +21,7 @@ add_library(
   UnitLoaderTestTools.cpp
   E2EFilterTestBase.cpp)
 
-target_link_libraries(
+velox_link_libraries(
   velox_dwio_common_test_utils
   Folly::folly
   fmt::fmt

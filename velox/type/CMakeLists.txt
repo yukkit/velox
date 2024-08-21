@@ -15,6 +15,11 @@ if(${VELOX_BUILD_TESTING})
   add_subdirectory(tests)
 endif()
 
+if(${VELOX_BUILD_TEST_UTILS})
+  install(FILES tests/SubfieldFiltersBuilder.h
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/velox/type/tests")
+endif()
+
 add_subdirectory(parser)
 add_subdirectory(tz)
 add_subdirectory(fbhive)

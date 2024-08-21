@@ -87,3 +87,10 @@ endif()
 if(${VELOX_BUILD_TESTING})
   add_subdirectory(tool)
 endif()
+
+install(
+  DIRECTORY external/utf8proc
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/velox/external"
+  FILES_MATCHING
+  PATTERN "*.inc"
+  PATTERN "*.h")

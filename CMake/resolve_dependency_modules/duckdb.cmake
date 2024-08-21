@@ -34,6 +34,7 @@ FetchContent_Declare(
   PATCH_COMMAND
     git apply ${CMAKE_CURRENT_LIST_DIR}/duckdb/remove-ccache.patch && git apply
     ${CMAKE_CURRENT_LIST_DIR}/duckdb/fix-duckdbversion.patch && git apply
+    ${CMAKE_CURRENT_LIST_DIR}/duckdb/duckdb_config.patch && git apply
     ${CMAKE_CURRENT_LIST_DIR}/duckdb/re2.patch)
 
 set(BUILD_UNITTESTS OFF)
@@ -41,8 +42,6 @@ set(ENABLE_SANITIZER OFF)
 set(ENABLE_UBSAN OFF)
 set(BUILD_SHELL OFF)
 set(EXPORT_DLL_SYMBOLS OFF)
-set(PREVIOUS_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-set(CMAKE_BUILD_TYPE Release)
 set(PREVIOUS_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-virtual-dtor")
 
@@ -53,4 +52,3 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 endif()
 
 set(CMAKE_CXX_FLAGS ${PREVIOUS_CMAKE_CXX_FLAGS})
-set(CMAKE_BUILD_TYPE ${PREVIOUS_BUILD_TYPE})

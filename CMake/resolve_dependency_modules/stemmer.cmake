@@ -55,3 +55,8 @@ set_target_properties(
     INTERFACE_INCLUDE_DIRECTORIES ${STEMMER_INCLUDE_PATH})
 
 add_dependencies(stemmer libstemmer)
+
+install(
+  FILES
+    ${STEMMER_PREFIX}/src/libstemmer/${CMAKE_STATIC_LIBRARY_PREFIX}stemmer${CMAKE_STATIC_LIBRARY_SUFFIX}
+  DESTINATION ${CMAKE_INSTALL_LIBDIR})

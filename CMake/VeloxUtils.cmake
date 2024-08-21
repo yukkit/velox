@@ -32,7 +32,10 @@ endfunction()
 # Base add velox library call to add a library and install it.
 function(velox_base_add_library TARGET)
   add_library(${TARGET} ${ARGN})
-  install(TARGETS ${TARGET} DESTINATION lib/velox)
+  install(
+    TARGETS ${TARGET}
+    EXPORT veloxTargets
+    DESTINATION lib/velox)
   velox_install_library_headers()
 endfunction()
 
