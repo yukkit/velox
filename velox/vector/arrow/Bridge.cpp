@@ -15,6 +15,11 @@
  */
 
 #include "velox/vector/arrow/Bridge.h"
+#include <arrow/array/array_base.h>
+#include <arrow/array/builder_primitive.h>
+#include <arrow/c/bridge.h>
+#include <velox/type/Type.h>
+#include <velox/vector/BaseVector.h>
 
 #include "velox/buffer/Buffer.h"
 #include "velox/common/base/BitUtil.h"
@@ -1134,6 +1139,14 @@ void exportConstant(
     ArrowArray& out,
     memory::MemoryPool* pool,
     VeloxToArrowBridgeHolder& holder) {
+  if (vec.type()->isUnKnown()) {
+    std::shared_ptr<arrow::Array> null_array;
+    arrow::NullBuilder null_builder;
+    auto status = null_builder.AppendNulls(vec.size());
+    null_array = null_builder.Finish().ValueOrDie();
+    status = arrow::ExportArray(*null_array, &out);
+    return;
+  }
   // As per Arrow spec, REE has zero buffers and two children, `run_ends` and
   // `values`.
   out.n_buffers = 0;
@@ -1208,8 +1221,15 @@ void exportToArrowImpl(
     default:
       VELOX_NYI("{} cannot be exported to Arrow yet.", vec.encoding());
   }
-  out.private_data = holder.release();
-  out.release = releaseArrowArray;
+  if (!vec.type()->isUnKnown()) {
+    out.private_data = holder.release();
+    out.release = releaseArrowArray;
+  } else {
+    if (out.release == nullptr) {
+      out.private_data = holder.release();
+      out.release = releaseArrowArray;
+    }
+  }
 }
 
 // Parses the velox decimal format from the given arrow format.
@@ -2023,6 +2043,9 @@ VectorPtr importFromArrowImpl(
   } else if (type->isMap()) {
     return createMapVector(
         pool, type, nulls, arrowSchema, arrowArray, isViewer, wrapInBufferView);
+  } else if (type->isUnKnown()) {
+    return facebook::velox::BaseVector::createNullConstant(
+        facebook::velox::UNKNOWN(), arrowArray.length, pool);
   } else if (type->isPrimitiveType()) {
     // Other primitive types.
 
