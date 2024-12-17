@@ -121,6 +121,10 @@ class SubstraitVeloxPlanConverter {
       const ::substrait::RelCommon& relCommon,
       const core::PlanNodePtr& noEmitNode);
 
+  void setSubstraitParser(std::shared_ptr<SubstraitParser> substraitParser) {
+    substraitParser_ = substraitParser;
+  }
+
  protected:
   /// Returns unique ID to use for plan node. Produces sequential numbers
   /// starting from zero.

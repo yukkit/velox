@@ -38,7 +38,9 @@ class SubstraitParser {
       const ::substrait::NamedStruct& namedStruct);
 
   /// Parse Substrait Type.
-  TypePtr parseType(const ::substrait::Type& substraitType);
+  virtual TypePtr parseType(const ::substrait::Type& substraitType);
+
+  virtual ~SubstraitParser() = default;
 
   /// Parse Substrait ReferenceSegment.
   int32_t parseReferenceSegment(
