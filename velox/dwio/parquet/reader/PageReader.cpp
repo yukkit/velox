@@ -16,6 +16,8 @@
 
 #include "velox/dwio/parquet/reader/PageReader.h"
 
+#include "common/base/Exceptions.h"
+#include "dwio/parquet/thrift/ParquetThriftTypes.h"
 #include "velox/common/testutil/TestValue.h"
 #include "velox/dwio/common/BufferUtil.h"
 #include "velox/dwio/common/ColumnVisitors.h"
@@ -333,6 +335,54 @@ void PageReader::prepareDictionary(const PageHeader& pageHeader) {
         pageData_,
         pageHeader.compressed_page_size,
         pageHeader.uncompressed_page_size);
+  }
+
+  if (type_->logicalType_->__isset.TIMESTAMP) {
+    auto timestampAdjustment = 1;
+    if (type_->logicalType_->TIMESTAMP.unit.__isset.MILLIS) {
+      timestampAdjustment = Timestamp::kMillisecondsInSecond;
+    } else if (type_->logicalType_->TIMESTAMP.unit.__isset.MICROS) {
+      timestampAdjustment = Timestamp::kMicrosecondsInMillisecond * Timestamp::kMillisecondsInSecond;
+    } else if (type_->logicalType_->TIMESTAMP.unit.__isset.NANOS) {
+      timestampAdjustment = Timestamp::kNanosInSecond;
+    } else {
+      std::stringstream oss;
+      type_->logicalType_->TIMESTAMP.unit.printTo(oss);
+      VELOX_USER_FAIL(
+          "Unsupported timestamp unit for dictionary encoding: {}",
+          oss.str());
+    }
+
+    auto parquetTypeSize = sizeof(int64_t);
+    auto numVeloxBytes = dictionary_.numValues * sizeof(Timestamp);
+    dictionary_.values = AlignedBuffer::allocate<char>(numVeloxBytes, &pool_);
+    auto numBytes = dictionary_.numValues * parquetTypeSize;
+    if (pageData_) {
+      memcpy(dictionary_.values->asMutable<char>(), pageData_, numBytes);
+    } else {
+      dwio::common::readBytes(
+          numBytes,
+          inputStream_.get(),
+          dictionary_.values->asMutable<char>(),
+          bufferStart_,
+          bufferEnd_);
+    }
+    // Expand the Parquet type length values to Velox type length.
+    // We start from the end to allow in-place expansion.
+    auto values = dictionary_.values->asMutable<Timestamp>();
+    auto parquetValues = dictionary_.values->asMutable<char>();
+
+    for (auto i = dictionary_.numValues - 1; i >= 0; --i) {
+      // Convert the timestamp into seconds and nanos since the Unix epoch,
+      // 00:00:00.000000 on 1 January 1970.
+      int64_t val;
+      memcpy(&val, parquetValues + i * parquetTypeSize, sizeof(int64_t));
+
+      int64_t seconds = val / timestampAdjustment;
+      uint64_t nanos = (val % timestampAdjustment) * (Timestamp::kNanosInSecond / timestampAdjustment);
+      values[i] = Timestamp(seconds, nanos);
+    }
+    return;
   }
 
   auto parquetType = type_->parquetType_.value();
