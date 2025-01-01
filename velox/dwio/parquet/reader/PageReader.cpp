@@ -337,20 +337,21 @@ void PageReader::prepareDictionary(const PageHeader& pageHeader) {
         pageHeader.uncompressed_page_size);
   }
 
-  if (type_->logicalType_->__isset.TIMESTAMP) {
+  if (type_->logicalType_.has_value() &&
+      type_->logicalType_->__isset.TIMESTAMP) {
     auto timestampAdjustment = 1;
     if (type_->logicalType_->TIMESTAMP.unit.__isset.MILLIS) {
       timestampAdjustment = Timestamp::kMillisecondsInSecond;
     } else if (type_->logicalType_->TIMESTAMP.unit.__isset.MICROS) {
-      timestampAdjustment = Timestamp::kMicrosecondsInMillisecond * Timestamp::kMillisecondsInSecond;
+      timestampAdjustment = Timestamp::kMicrosecondsInMillisecond *
+          Timestamp::kMillisecondsInSecond;
     } else if (type_->logicalType_->TIMESTAMP.unit.__isset.NANOS) {
       timestampAdjustment = Timestamp::kNanosInSecond;
     } else {
       std::stringstream oss;
       type_->logicalType_->TIMESTAMP.unit.printTo(oss);
       VELOX_USER_FAIL(
-          "Unsupported timestamp unit for dictionary encoding: {}",
-          oss.str());
+          "Unsupported timestamp unit for dictionary encoding: {}", oss.str());
     }
 
     auto parquetTypeSize = sizeof(int64_t);
@@ -377,10 +378,7 @@ void PageReader::prepareDictionary(const PageHeader& pageHeader) {
       // 00:00:00.000000 on 1 January 1970.
       int64_t val;
       memcpy(&val, parquetValues + i * parquetTypeSize, sizeof(int64_t));
-
-      int64_t seconds = val / timestampAdjustment;
-      uint64_t nanos = (val % timestampAdjustment) * (Timestamp::kNanosInSecond / timestampAdjustment);
-      values[i] = Timestamp(seconds, nanos);
+      values[i] = Timestamp::from(val, timestampAdjustment);
     }
     return;
   }
@@ -724,6 +722,16 @@ void PageReader::makeDecoder() {
           pageData_ + 1, pageData_ + encodedDataSize_, pageData_[0]);
       break;
     case Encoding::PLAIN:
+      if (type_->logicalType_.has_value() &&
+          type_->logicalType_->__isset.TIMESTAMP) {
+        auto unit = type_->logicalType_->TIMESTAMP.unit;
+        timstampDecoder_ = std::make_unique<TimestampDecoder>(
+            std::make_unique<dwio::common::SeekableArrayInputStream>(
+                pageData_, encodedDataSize_),
+            unit,
+            false);
+        break;
+      }
       switch (parquetType) {
         case thrift::Type::BOOLEAN:
           booleanDecoder_ = std::make_unique<BooleanDecoder>(
@@ -840,6 +848,8 @@ void PageReader::skip(int64_t numRows) {
     deltaByteArrDecoder_->skip(toSkip);
   } else if (rleBooleanDecoder_) {
     rleBooleanDecoder_->skip(toSkip);
+  } else if (timstampDecoder_) {
+    timstampDecoder_->skip(toSkip);
   } else {
     VELOX_FAIL("No decoder to skip");
   }

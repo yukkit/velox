@@ -285,6 +285,26 @@ struct Timestamp {
     return Timestamp(second, nano);
   }
 
+  /**
+   * Converts a given timestamp and adjustment factor into a Timestamp object.
+   *
+   * @param ts The input timestamp in an arbitrary unit.
+   * @param timestampAdjustment The adjustment factor to convert the input
+   * timestamp to seconds.
+   * @return A Timestamp object representing the converted time.
+   */
+  static Timestamp from(int64_t ts, int64_t timestampAdjustment) {
+    int64_t seconds = ts / timestampAdjustment;
+    int64_t remainder = ts % timestampAdjustment;
+    if (remainder < 0) {
+      remainder += timestampAdjustment;
+      seconds -= 1;
+    }
+    uint64_t nanos =
+        remainder * (Timestamp::kNanosInSecond / timestampAdjustment);
+    return {seconds, nanos};
+  }
+
   static const Timestamp minMillis() {
     // The minimum Timestamp that toMillis() method will not overflow.
     // Used to calculate the minimum value of the Presto timestamp.
