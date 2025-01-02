@@ -16,6 +16,7 @@
 #pragma once
 
 #include <string_view>
+#include <utility>
 
 #include "velox/common/base/Crc.h"
 #include "velox/common/compression/Compression.h"
@@ -50,11 +51,12 @@ class PrestoVectorSerde : public VectorSerde {
  public:
   // Input options that the serializer recognizes.
   struct PrestoOptions : VectorSerde::Options {
-    PrestoOptions() = default;
+    PrestoOptions(){};
 
     PrestoOptions(
         bool _useLosslessTimestamp,
-        common::CompressionKind _compressionKind,
+        common::CompressionKind _compressionKind =
+            common::CompressionKind::CompressionKind_NONE,
         float _minCompressionRatio = 0.8,
         bool _nullsFirst = false,
         bool _preserveEncodings = false)
@@ -82,7 +84,8 @@ class PrestoVectorSerde : public VectorSerde {
     bool preserveEncodings{false};
   };
 
-  PrestoVectorSerde() : VectorSerde(Kind::kPresto) {}
+  explicit PrestoVectorSerde(PrestoOptions opts = {})
+      : VectorSerde(Kind::kPresto), opts_(std::move(opts)) {}
 
   /// Adds the serialized sizes of the rows of 'vector' in 'ranges[i]' to
   /// '*sizes[i]'.
@@ -185,8 +188,11 @@ class PrestoVectorSerde : public VectorSerde {
       std::vector<Token>& out,
       const Options* options = nullptr);
 
-  static void registerVectorSerde();
+  static void registerVectorSerde(
+      const PrestoVectorSerde::PrestoOptions& opts = {});
   static void registerNamedVectorSerde();
+ private:
+  const PrestoVectorSerde::PrestoOptions opts_;
 };
 
 class PrestoOutputStreamListener : public OutputStreamListener {
