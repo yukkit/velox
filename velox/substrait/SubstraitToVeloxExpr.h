@@ -66,6 +66,11 @@ class SubstraitVeloxExprConverter {
       const ::substrait::Expression::IfThen& substraitIfThen,
       const RowTypePtr& inputType);
 
+  void setSubstraitParser(std::shared_ptr<SubstraitParser> substraitParser) {
+    VELOX_CHECK_NOT_NULL(substraitParser, "SubstraitParser cannot be null");
+    substraitParser_ = std::move(substraitParser);
+  }
+
  protected:
   /// Convert list literal to ArrayVector.
   ArrayVectorPtr literalsToArrayVector(
@@ -76,7 +81,8 @@ class SubstraitVeloxExprConverter {
 
   /// The Substrait parser used to convert Substrait representations into
   /// recognizable representations.
-  SubstraitParser substraitParser_;
+  std::shared_ptr<SubstraitParser> substraitParser_{
+      std::make_shared<SubstraitParser>()};
 
   /// The map storing the relations between the function id and the function
   /// name.

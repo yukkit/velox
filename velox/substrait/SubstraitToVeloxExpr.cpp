@@ -165,7 +165,7 @@ SubstraitVeloxExprConverter::toVeloxExpr(
     case ::substrait::Expression::FieldReference::ReferenceTypeCase::
         kDirectReference: {
       const auto& directRef = substraitField.direct_reference();
-      int32_t colIdx = substraitParser_.parseReferenceSegment(directRef);
+      int32_t colIdx = substraitParser_->parseReferenceSegment(directRef);
       const auto& inputNames = inputType->names();
       const int64_t inputSize = inputNames.size();
       if (colIdx <= inputSize) {
@@ -193,10 +193,10 @@ core::TypedExprPtr SubstraitVeloxExprConverter::toVeloxExpr(
   for (const auto& sArg : substraitFunc.arguments()) {
     params.emplace_back(toVeloxExpr(sArg.value(), inputType));
   }
-  const auto& veloxFunction = substraitParser_.findVeloxFunction(
+  const auto& veloxFunction = substraitParser_->findVeloxFunction(
       functionMap_, substraitFunc.function_reference());
   return std::make_shared<const core::CallTypedExpr>(
-      substraitParser_.parseType(substraitFunc.output_type()),
+      substraitParser_->parseType(substraitFunc.output_type()),
       std::move(params),
       veloxFunction);
 }
@@ -233,7 +233,7 @@ SubstraitVeloxExprConverter::toVeloxExpr(
       return std::make_shared<core::ConstantTypedExpr>(
           VARCHAR(), variant(substraitLit.string()));
     case ::substrait::Expression_Literal::LiteralTypeCase::kNull: {
-      auto veloxType = substraitParser_.parseType(substraitLit.null());
+      auto veloxType = substraitParser_->parseType(substraitLit.null());
       return std::make_shared<core::ConstantTypedExpr>(
           veloxType, variant::null(veloxType->kind()));
     }
@@ -288,7 +288,7 @@ ArrayVectorPtr SubstraitVeloxExprConverter::literalsToArrayVector(
       return makeArrayVector(constructFlatVector<TypeKind::VARCHAR>(
           listLiteral, childSize, VARCHAR(), pool_));
     case ::substrait::Expression_Literal::LiteralTypeCase::kNull: {
-      auto veloxType = substraitParser_.parseType(listLiteral.null());
+      auto veloxType = substraitParser_->parseType(listLiteral.null());
       auto kind = veloxType->kind();
       return makeArrayVector(VELOX_DYNAMIC_SCALAR_TYPE_DISPATCH(
           constructFlatVector, kind, listLiteral, childSize, veloxType, pool_));
@@ -323,7 +323,7 @@ ArrayVectorPtr SubstraitVeloxExprConverter::literalsToArrayVector(
 core::TypedExprPtr SubstraitVeloxExprConverter::toVeloxExpr(
     const ::substrait::Expression::Cast& castExpr,
     const RowTypePtr& inputType) {
-  auto type = substraitParser_.parseType(castExpr.type());
+  auto type = substraitParser_->parseType(castExpr.type());
   bool nullOnFailure = isNullOnFailure(castExpr.failure_behavior());
 
   std::vector<core::TypedExprPtr> inputs{
