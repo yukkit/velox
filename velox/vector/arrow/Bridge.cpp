@@ -2011,7 +2011,7 @@ VectorPtr importFromArrowImpl(
   // Otherwise, when null_count is zero, it's legit for the arrow array to have
   // non-null nulls buffer, in that case the converted Velox vector will not
   // have null buffer.
-  if (arrowArray.null_count != 0) {
+  if (arrowArray.null_count != 0 && !type->isUnKnown()) {
     VELOX_USER_CHECK_NOT_NULL(
         arrowArray.buffers[0],
         "Nulls buffer can't be null unless null_count is zero.");
