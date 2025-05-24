@@ -41,7 +41,7 @@ velox_link_libraries(
   protobuf::libprotobuf)
 
 # required for the wrapped protobuf headers/sources
-velox_include_directories(velox_dwio_dwrf_common PUBLIC ${PROJECT_BINARY_DIR})
+# velox_include_directories(velox_dwio_dwrf_common PUBLIC ${PROJECT_BINARY_DIR})
 
 if(NOT VELOX_MONO_LIBRARY)
   # trigger generation of pb files
