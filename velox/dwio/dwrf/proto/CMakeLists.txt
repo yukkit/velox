@@ -48,7 +48,10 @@ if(VELOX_MONO_LIBRARY)
   add_dependencies(velox dwio_proto)
 endif()
 
-# velox_include_directories( velox_dwio_dwrf_proto PUBLIC
-# $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-# $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>) install(FILES ${PROTO_HDRS}
-# DESTINATION include/velox/dwio/dwrf/proto)
+velox_add_library(velox_dwio_dwrf_proto ${PROTO_HDRS} ${PROTO_SRCS})
+velox_link_libraries(velox_dwio_dwrf_proto protobuf::libprotobuf)
+velox_include_directories(velox_dwio_dwrf_proto PUBLIC
+$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>) 
+install(FILES ${PROTO_HDRS}
+DESTINATION include/velox/dwio/dwrf/proto)

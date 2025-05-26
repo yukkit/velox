@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.20)
 message(STATUS "Building using CMake version: ${CMAKE_VERSION}")
+
+add_compile_definitions(_GNU_SOURCE)
 
 # The policy allows us to change options without caching.
 cmake_policy(SET CMP0077 NEW)
